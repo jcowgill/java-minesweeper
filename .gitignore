@@ -1,0 +1,11 @@
+# Build directory
+bin/
+
+# Java binaries
+*.jar
+*.class
+
+# Backup files
+*~
+*.tmp
+*.bak
