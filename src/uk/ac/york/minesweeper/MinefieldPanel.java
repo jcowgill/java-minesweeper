@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 /**
  * A component which can display a minefield graphically and handle various events
@@ -161,7 +162,9 @@ public class MinefieldPanel extends JComponent
 
                     if (tileValue < 0)
                     {
-                        // TODO Draw Mine
+                        // TODO mine image
+                        g.setColor(COLOUR_QUESTION);
+                        drawCharacter(g, graphicsX1, graphicsY1, '!');
                     }
                     else
                     {
@@ -188,7 +191,9 @@ public class MinefieldPanel extends JComponent
                     // Draw flag or question mark if needed
                     if (minefield.getTileState(x, y) == TileState.FLAGGED)
                     {
-                        // TODO flags
+                        // TODO flag image
+                        g.setColor(COLOUR_QUESTION);
+                        drawCharacter(g, graphicsX1, graphicsY1, 'F');
                     }
                     else if (minefield.getTileState(x, y) == TileState.QUESTION)
                     {
@@ -251,8 +256,36 @@ public class MinefieldPanel extends JComponent
             if (minefield.isFinished())
                 return;
 
-            // Update selected tile
-            selectedTile = getTileFromEvent(e);
+            // Get tile position
+            Point tile = getTileFromEvent(e);
+
+            // Right or left click?
+            if (SwingUtilities.isLeftMouseButton(e))
+            {
+                // Do not select tiles with flags on
+                if (minefield.getTileState(tile.x, tile.y) == TileState.FLAGGED)
+                    return;
+
+                // Set new selected tile
+                selectedTile = tile;
+            }
+            else if (SwingUtilities.isRightMouseButton(e))
+            {
+                TileState newState;
+
+                // Change flagged state
+                switch(minefield.getTileState(tile.x, tile.y))
+                {
+                    case COVERED:   newState = TileState.FLAGGED;   break;
+                    case FLAGGED:   newState = TileState.QUESTION;  break;
+                    default:        newState = TileState.COVERED;   break;
+
+                    case UNCOVERED: newState = TileState.UNCOVERED; break;
+                }
+
+                minefield.setTileState(tile.x, tile.y, newState);
+            }
+
             repaint();
         }
 
