@@ -2,8 +2,13 @@ package uk.ac.york.minesweeper;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -21,6 +26,9 @@ public class MinefieldPanel extends JComponent
     /** Amount to reduce line size by compared to tile size */
     private static final int LINE_SCALE = 16;
 
+    /** Amount of space to leave around characters (this value is for the default tile size) */
+    private static final int FONT_MARGIN = 4;
+
     /** Normal grey background */
     private static final Color COLOUR_NORMAL = new Color(0xC0, 0xC0, 0xC0);
 
@@ -30,8 +38,28 @@ public class MinefieldPanel extends JComponent
     /** Dark grey for bevels */
     private static final Color COLOUR_DARK = new Color(0x80, 0x80, 0x80);
 
+    /** Colour of question marks */
+    private static final Color COLOUR_QUESTION = Color.WHITE;
+
+    /** The colours of the numbers */
+    private static final Color[] COLOUR_NUMBERS = new Color[]
+    {
+        COLOUR_NORMAL,                  // 0 = Blend with background
+        new Color(0x00, 0x00, 0xFF),    // 1 = Blue
+        new Color(0x00, 0x7F, 0x00),    // 2 = Green
+        new Color(0xFF, 0x00, 0x00),    // 3 = Red
+        new Color(0x2F, 0x2F, 0x9F),    // 4 = Dark Blue
+        new Color(0xFF, 0x00, 0x00),    // 5 = Maroon
+        new Color(0x9F, 0x9F, 0x2F),    // 6 = Turquoise
+        new Color(0x00, 0x00, 0x00),    // 7 = Black
+        new Color(0x7F, 0x7F, 0x7F),    // 8 = Grey
+    };
+
     /** Current minefield */
     private Minefield minefield;
+
+    /** Currently selected tile (null most of the time) */
+    private Point selectedTile;
 
     /**
      * Initializes a new MinefieldPanel with the given Minefield
@@ -42,6 +70,7 @@ public class MinefieldPanel extends JComponent
      */
     public MinefieldPanel(Minefield minefield)
     {
+        this.addMouseListener(new MouseEventListener());
         this.setOpaque(true);
         this.setMinefield(minefield);
     }
@@ -68,9 +97,49 @@ public class MinefieldPanel extends JComponent
 
         this.minefield = newMinefield;
 
+        // Reset selected tile
+        this.selectedTile = null;
+
         // Update all visuals
         this.setBounds(this.getBounds());
         this.repaint();
+    }
+
+    /**
+     * Rescales the current font for another tile size
+     */
+    private static void rescaleFont(Graphics g, int tileSize)
+    {
+        // Calculate height to work with
+        float availableSpace = tileSize - 2 * FONT_MARGIN;
+
+        // Rescale font height
+        Font currFont = g.getFont();
+        FontMetrics fMetrics = g.getFontMetrics();
+
+        float newSize = availableSpace / (fMetrics.getAscent() + fMetrics.getDescent()) * currFont.getSize();
+
+        // Set new font
+        g.setFont(currFont.deriveFont(newSize));
+    }
+
+    /**
+     * Draws a character on a tile
+     *
+     * @param g graphics object
+     * @param tileSize tile size
+     * @param x x position of top-left of tile
+     * @param y y position of top-left of tile
+     * @param c character to draw
+     */
+    private static void drawCharacter(Graphics g, int x, int y, char c)
+    {
+        // Get currect coordinates to draw at
+        int drawX = x + FONT_MARGIN;
+        int drawY = y + FONT_MARGIN + g.getFontMetrics().getAscent();
+
+        // Draw the character
+        g.drawChars(new char[] { c }, 0, 1, drawX, drawY);
     }
 
     @Override
@@ -78,9 +147,16 @@ public class MinefieldPanel extends JComponent
     {
         Graphics2D g = (Graphics2D) gOld;
 
+        // Get selected tile position
+        int selectedX = (selectedTile == null ? -1 : selectedTile.x);
+        int selectedY = (selectedTile == null ? -1 : selectedTile.y);
+
         // Calculate tile size and line size
-        int tileSize = getWidth() / minefield.getWidth();
+        int tileSize = getTileSize();
         int lineSize = (tileSize + LINE_SCALE - 1) / LINE_SCALE;
+
+        // Rescale font to correct size
+        rescaleFont(g, tileSize);
 
         // Draw background
         g.setColor(COLOUR_NORMAL);
@@ -94,23 +170,42 @@ public class MinefieldPanel extends JComponent
                 int graphicsX1 = x * tileSize;
                 int graphicsY1 = y * tileSize;
 
+                // Draw standard background
+                g.setColor(COLOUR_DARK);
+                g.drawLine(graphicsX1, graphicsY1, graphicsX1 + tileSize, graphicsY1);
+                g.drawLine(graphicsX1, graphicsY1, graphicsX1, graphicsY1 + tileSize);
+
                 // Covered or uncovered?
                 if (minefield.getTileState(x, y) == TileState.UNCOVERED)
                 {
-                    // TODO numbers
+                    // Draw the correct symbol
+                    int tileValue = minefield.getTileValue(x, y);
+
+                    if (tileValue < 0)
+                    {
+                        // TODO Draw Mine
+                    }
+                    else
+                    {
+                        g.setColor(COLOUR_NUMBERS[tileValue]);
+                        drawCharacter(g, graphicsX1, graphicsY1, (char) ('0' + tileValue));
+                    }
                 }
                 else
                 {
-                    // Draw bevel
-                    int bevelX2 = graphicsX1 + tileSize - lineSize;
-                    int bevelY2 = graphicsY1 + tileSize - lineSize;
+                    // Only draw the bevel background if this is NOT the selected tile
+                    if (x != selectedX || y != selectedY)
+                    {
+                        int bevelX2 = graphicsX1 + tileSize - lineSize;
+                        int bevelY2 = graphicsY1 + tileSize - lineSize;
 
-                    g.setColor(COLOUR_LIGHT);
-                    g.fillRect(graphicsX1, graphicsY1, tileSize, lineSize);
-                    g.fillRect(graphicsX1, graphicsY1, lineSize, tileSize);
-                    g.setColor(COLOUR_DARK);
-                    g.fillRect(graphicsX1, bevelY2,    tileSize, lineSize);
-                    g.fillRect(bevelX2,    graphicsY1, lineSize, tileSize);
+                        g.setColor(COLOUR_LIGHT);
+                        g.fillRect(graphicsX1, graphicsY1, tileSize, lineSize);
+                        g.fillRect(graphicsX1, graphicsY1, lineSize, tileSize);
+                        g.setColor(COLOUR_DARK);
+                        g.fillRect(graphicsX1, bevelY2,    tileSize, lineSize);
+                        g.fillRect(bevelX2,    graphicsY1, lineSize, tileSize);
+                    }
 
                     // Draw flag or question mark if needed
                     if (minefield.getTileState(x, y) == TileState.FLAGGED)
@@ -119,7 +214,8 @@ public class MinefieldPanel extends JComponent
                     }
                     else if (minefield.getTileState(x, y) == TileState.QUESTION)
                     {
-                        // TODO questions
+                        g.setColor(COLOUR_QUESTION);
+                        drawCharacter(g, graphicsX1, graphicsY1, '?');
                     }
                 }
             }
@@ -150,6 +246,72 @@ public class MinefieldPanel extends JComponent
 
         // Tell superclass about the update
         super.setBounds(x, y, width, height);
+    }
+
+    /**
+     * Gets the size of the tiles in the minefield
+     */
+    private int getTileSize()
+    {
+        return getWidth() / minefield.getWidth();
+    }
+
+    /**
+     * Handles all mouse events within the game area
+     */
+    private class MouseEventListener extends MouseAdapter
+    {
+        /**
+         * Calculates the selected tile from a mouse event
+         */
+        private Point getTileFromEvent(MouseEvent e)
+        {
+            int tileSize = getTileSize();
+
+            return new Point(e.getX() / tileSize, e.getY() / tileSize);
+        }
+
+        @Override
+        public void mouseExited(MouseEvent e)
+        {
+            // Ignore if finished
+            if (minefield.isFinished())
+                return;
+
+            // Clear selected tile
+            selectedTile = null;
+            repaint();
+        }
+
+        @Override
+        public void mousePressed(MouseEvent e)
+        {
+            // Ignore if finished
+            if (minefield.isFinished())
+                return;
+
+            // Update selected tile
+            selectedTile = getTileFromEvent(e);
+            repaint();
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent e)
+        {
+            // Ignore if finished
+            if (minefield.isFinished())
+                return;
+
+            // If the tile is the same as before, uncover it
+            if (selectedTile != null && selectedTile.equals(getTileFromEvent(e)))
+            {
+                minefield.uncover(selectedTile.x, selectedTile.y);
+            }
+
+            // Clear selected tile
+            selectedTile = null;
+            repaint();
+        }
     }
 
     public static void main(String[] args)
