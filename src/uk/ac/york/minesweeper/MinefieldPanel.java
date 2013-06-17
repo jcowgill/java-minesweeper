@@ -3,7 +3,6 @@ package uk.ac.york.minesweeper;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -20,14 +19,18 @@ public class MinefieldPanel extends JComponent
 {
     private static final long serialVersionUID = 1L;
 
-    /** Default (preferred) tile size */
-    private static final int DEFAULT_TILE_SIZE = 24;
+    /** Size of all the tiles */
+    private static final int TILE_SIZE = 32;
 
-    /** Amount to reduce line size by compared to tile size */
-    private static final int LINE_SCALE = 16;
+    /** Width of the bevel */
+    private static final int BEVEL_WIDTH = 2;
 
-    /** Amount of space to leave around characters (this value is for the default tile size) */
-    private static final int FONT_MARGIN = 4;
+    /** Font vertical offset (from top to BASELINE) */
+    private static final int FONT_VOFFSET = 24;
+
+    /** The font to draw numbers with */
+    private static final Font FONT = new Font(Font.MONOSPACED, Font.BOLD, 24);
+
 
     /** Normal grey background */
     private static final Color COLOUR_NORMAL = new Color(0xC0, 0xC0, 0xC0);
@@ -72,6 +75,7 @@ public class MinefieldPanel extends JComponent
     {
         this.addMouseListener(new MouseEventListener());
         this.setOpaque(true);
+        this.setFont(FONT);
         this.setMinefield(minefield);
     }
 
@@ -106,37 +110,18 @@ public class MinefieldPanel extends JComponent
     }
 
     /**
-     * Rescales the current font for another tile size
-     */
-    private static void rescaleFont(Graphics g, int tileSize)
-    {
-        // Calculate height to work with
-        float availableSpace = tileSize - 2 * FONT_MARGIN;
-
-        // Rescale font height
-        Font currFont = g.getFont();
-        FontMetrics fMetrics = g.getFontMetrics();
-
-        float newSize = availableSpace / (fMetrics.getAscent() + fMetrics.getDescent()) * currFont.getSize();
-
-        // Set new font
-        g.setFont(currFont.deriveFont(newSize));
-    }
-
-    /**
      * Draws a character on a tile
      *
      * @param g graphics object
-     * @param tileSize tile size
      * @param x x position of top-left of tile
      * @param y y position of top-left of tile
      * @param c character to draw
      */
     private static void drawCharacter(Graphics g, int x, int y, char c)
     {
-        // Get currect coordinates to draw at
-        int drawX = x + FONT_MARGIN;
-        int drawY = y + FONT_MARGIN + g.getFontMetrics().getAscent();
+        // Get coordinates to draw at
+        int drawX = x + (TILE_SIZE - g.getFontMetrics().charWidth(c)) / 2;
+        int drawY = y + FONT_VOFFSET;
 
         // Draw the character
         g.drawChars(new char[] { c }, 0, 1, drawX, drawY);
@@ -151,13 +136,6 @@ public class MinefieldPanel extends JComponent
         int selectedX = (selectedTile == null ? -1 : selectedTile.x);
         int selectedY = (selectedTile == null ? -1 : selectedTile.y);
 
-        // Calculate tile size and line size
-        int tileSize = getTileSize();
-        int lineSize = (tileSize + LINE_SCALE - 1) / LINE_SCALE;
-
-        // Rescale font to correct size
-        rescaleFont(g, tileSize);
-
         // Draw background
         g.setColor(COLOUR_NORMAL);
         g.fillRect(0, 0, getWidth(), getHeight());
@@ -167,13 +145,13 @@ public class MinefieldPanel extends JComponent
         {
             for (int y = 0; y < minefield.getHeight(); y++)
             {
-                int graphicsX1 = x * tileSize;
-                int graphicsY1 = y * tileSize;
+                int graphicsX1 = x * TILE_SIZE;
+                int graphicsY1 = y * TILE_SIZE;
 
                 // Draw standard background
                 g.setColor(COLOUR_DARK);
-                g.drawLine(graphicsX1, graphicsY1, graphicsX1 + tileSize, graphicsY1);
-                g.drawLine(graphicsX1, graphicsY1, graphicsX1, graphicsY1 + tileSize);
+                g.drawLine(graphicsX1, graphicsY1, graphicsX1 + TILE_SIZE, graphicsY1);
+                g.drawLine(graphicsX1, graphicsY1, graphicsX1, graphicsY1 + TILE_SIZE);
 
                 // Covered or uncovered?
                 if (minefield.getTileState(x, y) == TileState.UNCOVERED)
@@ -196,15 +174,15 @@ public class MinefieldPanel extends JComponent
                     // Only draw the bevel background if this is NOT the selected tile
                     if (x != selectedX || y != selectedY)
                     {
-                        int bevelX2 = graphicsX1 + tileSize - lineSize;
-                        int bevelY2 = graphicsY1 + tileSize - lineSize;
+                        int bevelX2 = graphicsX1 + TILE_SIZE - BEVEL_WIDTH;
+                        int bevelY2 = graphicsY1 + TILE_SIZE - BEVEL_WIDTH;
 
                         g.setColor(COLOUR_LIGHT);
-                        g.fillRect(graphicsX1, graphicsY1, tileSize, lineSize);
-                        g.fillRect(graphicsX1, graphicsY1, lineSize, tileSize);
+                        g.fillRect(graphicsX1, graphicsY1, TILE_SIZE, BEVEL_WIDTH);
+                        g.fillRect(graphicsX1, graphicsY1, BEVEL_WIDTH, TILE_SIZE);
                         g.setColor(COLOUR_DARK);
-                        g.fillRect(graphicsX1, bevelY2,    tileSize, lineSize);
-                        g.fillRect(bevelX2,    graphicsY1, lineSize, tileSize);
+                        g.fillRect(graphicsX1, bevelY2,    TILE_SIZE, BEVEL_WIDTH);
+                        g.fillRect(bevelX2,    graphicsY1, BEVEL_WIDTH, TILE_SIZE);
                     }
 
                     // Draw flag or question mark if needed
@@ -225,35 +203,20 @@ public class MinefieldPanel extends JComponent
     @Override
     public Dimension getPreferredSize()
     {
-        return new Dimension(DEFAULT_TILE_SIZE * minefield.getWidth(),
-                             DEFAULT_TILE_SIZE * minefield.getHeight());
+        return new Dimension(TILE_SIZE * minefield.getWidth(),
+                             TILE_SIZE * minefield.getHeight());
     }
 
     @Override
-    public void setBounds(int x, int y, int width, int height)
+    public Dimension getMaximumSize()
     {
-        // This method forces the component to the correct aspect ratio
-
-        // Calculate tile size from width and height
-        int tileSizeWidth = width / minefield.getWidth();
-        int tileSizeHeight = height / minefield.getHeight();
-
-        // Use the smallest to recalculate width and height
-        int tileSize = Math.min(tileSizeWidth, tileSizeHeight);
-
-        width = tileSize * minefield.getWidth();
-        height = tileSize * minefield.getHeight();
-
-        // Tell superclass about the update
-        super.setBounds(x, y, width, height);
+        return getPreferredSize();
     }
 
-    /**
-     * Gets the size of the tiles in the minefield
-     */
-    private int getTileSize()
+    @Override
+    public Dimension getMinimumSize()
     {
-        return getWidth() / minefield.getWidth();
+        return getPreferredSize();
     }
 
     /**
@@ -266,9 +229,7 @@ public class MinefieldPanel extends JComponent
          */
         private Point getTileFromEvent(MouseEvent e)
         {
-            int tileSize = getTileSize();
-
-            return new Point(e.getX() / tileSize, e.getY() / tileSize);
+            return new Point(e.getX() / TILE_SIZE, e.getY() / TILE_SIZE);
         }
 
         @Override
