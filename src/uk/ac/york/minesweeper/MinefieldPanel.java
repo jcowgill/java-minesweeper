@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -35,8 +34,8 @@ public class MinefieldPanel extends JComponent
     private static final Font FONT = new Font(Font.MONOSPACED, Font.BOLD, 24);
 
 
-    /** Normal grey background */
-    private static final Color COLOUR_NORMAL = new Color(0xC0, 0xC0, 0xC0);
+    /** Default background colour */
+    private static final Color COLOUR_BACKGROUND = new Color(0xC0, 0xC0, 0xC0);
 
     /** Light grey for bevels */
     private static final Color COLOUR_LIGHT = new Color(0xE0, 0xE0, 0xE0);
@@ -47,10 +46,10 @@ public class MinefieldPanel extends JComponent
     /** Colour of question marks */
     private static final Color COLOUR_QUESTION = Color.WHITE;
 
-    /** The colours of the numbers */
+    /** The colours of the numbers (0 is unused) */
     private static final Color[] COLOUR_NUMBERS = new Color[]
     {
-        COLOUR_NORMAL,                  // 0 = Blend with background
+        null,                           // 0 = Unused
         new Color(0x00, 0x00, 0xFF),    // 1 = Blue
         new Color(0x00, 0x7F, 0x00),    // 2 = Green
         new Color(0xFF, 0x00, 0x00),    // 3 = Red
@@ -80,6 +79,7 @@ public class MinefieldPanel extends JComponent
     public MinefieldPanel(Minefield minefield)
     {
         this.addMouseListener(new MouseEventListener());
+        this.setBackground(COLOUR_BACKGROUND);
         this.setOpaque(true);
         this.setFont(FONT);
         this.setMinefield(minefield);
@@ -185,17 +185,18 @@ public class MinefieldPanel extends JComponent
     }
 
     @Override
-    public void paintComponent(Graphics gOld)
+    public void paintComponent(Graphics g)
     {
-        Graphics2D g = (Graphics2D) gOld;
-
         // Get selected tile position
         int selectedX = (selectedTile == null ? -1 : selectedTile.x);
         int selectedY = (selectedTile == null ? -1 : selectedTile.y);
 
         // Draw background
-        g.setColor(COLOUR_NORMAL);
-        g.fillRect(0, 0, getWidth(), getHeight());
+        if (isOpaque())
+        {
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth(), getHeight());
+        }
 
         // Draw all the tiles
         for (int x = 0; x < minefield.getWidth(); x++)
@@ -220,7 +221,7 @@ public class MinefieldPanel extends JComponent
                     {
                         drawImage(g, graphicsX1, graphicsY1, Images.MINE);
                     }
-                    else
+                    else if (tileValue > 0)
                     {
                         g.setColor(COLOUR_NUMBERS[tileValue]);
                         drawCharacter(g, graphicsX1, graphicsY1, (char) ('0' + tileValue));
