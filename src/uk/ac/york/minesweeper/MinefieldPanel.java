@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -65,6 +66,9 @@ public class MinefieldPanel extends JComponent
     /** Currently selected tile (null most of the time) */
     private Point selectedTile;
 
+    /** List of state change listeners */
+    private ArrayList<MinefieldStateChangeListener> listeners = new ArrayList<MinefieldStateChangeListener>();
+
     /**
      * Initializes a new MinefieldPanel with the given Minefield
      *
@@ -78,6 +82,38 @@ public class MinefieldPanel extends JComponent
         this.setOpaque(true);
         this.setFont(FONT);
         this.setMinefield(minefield);
+    }
+
+    /**
+     * Adds a listener to which received game state change events
+     *
+     * @param listener listener to add
+     */
+    public void addStateChangeListener(MinefieldStateChangeListener listener)
+    {
+        if (!listeners.contains(listener))
+            listeners.add(listener);
+    }
+
+    /**
+     * Removes a listener which received game state change events
+     *
+     * @param listener listener to remove
+     */
+    public void removeStateChangeListener(MinefieldStateChangeListener listener)
+    {
+        listeners.remove(listener);
+    }
+
+    /**
+     * Fires the state changed event
+     */
+    private void fireStateChangeEvent()
+    {
+        MinefieldStateChangeEvent event = new MinefieldStateChangeEvent(this);
+
+        for (MinefieldStateChangeListener listener : listeners)
+            listener.stateChanged(event);
     }
 
     /**
@@ -106,8 +142,11 @@ public class MinefieldPanel extends JComponent
         this.selectedTile = null;
 
         // Update all visuals
-        this.setBounds(this.getBounds());
+        this.setSize(getPreferredSize());
         this.repaint();
+
+        // Fire event
+        this.fireStateChangeEvent();
     }
 
     /**
@@ -299,7 +338,12 @@ public class MinefieldPanel extends JComponent
             // If the tile is the same as before, uncover it
             if (selectedTile != null && selectedTile.equals(getTileFromEvent(e)))
             {
+                GameState state = minefield.getGameState();
                 minefield.uncover(selectedTile.x, selectedTile.y);
+
+                // Fire state changed event if needed
+                if (minefield.getGameState() != state)
+                    fireStateChangeEvent();
             }
 
             // Clear selected tile
