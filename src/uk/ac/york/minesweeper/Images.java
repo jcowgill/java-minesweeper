@@ -1,24 +1,44 @@
 package uk.ac.york.minesweeper;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
+
+import javax.imageio.ImageIO;
 
 /**
  * Static class containing the game's images
  */
 public final class Images
 {
-    public static final BufferedImage MINE;
-    public static final BufferedImage FLAG;
+    /** Resources directory (beginning and ending with forward slash) */
+    private static final String RES_DIRECTORY = "/res/";
 
-    static
+    /** Image of a sea mine */
+    public static final BufferedImage MINE = loadImageResource("mine.png");
+
+    /** Image of a generic flag */
+    public static final BufferedImage FLAG = loadImageResource("flag.png");
+
+    /**
+     * Loads an image from the resources directory
+     *
+     * @param name image name
+     * @return the loaded image
+     */
+    private static BufferedImage loadImageResource(String name)
     {
-        // Open core image file
-        InputStream coreImage = Images.class.getClassLoader().getResourceAsStream("images.png");
-
-        // TODO Load Images
-        MINE = null;
-        FLAG = null;
+        // Load image stream
+        try (InputStream imgStream = Images.class.getResourceAsStream(RES_DIRECTORY + name))
+        {
+            // Decompress image
+            return ImageIO.read(imgStream);
+        }
+        catch (IOException e)
+        {
+            // Oh noes
+            throw new RuntimeException("Could not load image file: " + name, e);
+        }
     }
 
     private Images()
