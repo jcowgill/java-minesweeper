@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import javax.swing.JComponent;
@@ -167,6 +168,22 @@ public class MinefieldPanel extends JComponent
         g.drawChars(new char[] { c }, 0, 1, drawX, drawY);
     }
 
+    /**
+     * Draws an image at the given tile location
+     *
+     * @param g graphics object
+     * @param x x position of top-left of tile
+     * @param y y position of top-left of tile
+     * @param img image to draw
+     */
+    private static void drawImage(Graphics g, int tileX, int tileY, BufferedImage img)
+    {
+        int xOff = tileX + (TILE_SIZE - img.getWidth()) / 2;
+        int yOff = tileY + (TILE_SIZE - img.getHeight()) / 2;
+
+        g.drawImage(img, xOff, yOff, null);
+    }
+
     @Override
     public void paintComponent(Graphics gOld)
     {
@@ -201,9 +218,7 @@ public class MinefieldPanel extends JComponent
 
                     if (tileValue < 0)
                     {
-                        // TODO mine image
-                        g.setColor(COLOUR_QUESTION);
-                        drawCharacter(g, graphicsX1, graphicsY1, '!');
+                        drawImage(g, graphicsX1, graphicsY1, Images.MINE);
                     }
                     else
                     {
@@ -230,9 +245,7 @@ public class MinefieldPanel extends JComponent
                     // Draw flag or question mark if needed
                     if (minefield.getTileState(x, y) == TileState.FLAGGED)
                     {
-                        // TODO flag image
-                        g.setColor(COLOUR_QUESTION);
-                        drawCharacter(g, graphicsX1, graphicsY1, 'F');
+                        drawImage(g, graphicsX1, graphicsY1, Images.FLAG);
                     }
                     else if (minefield.getTileState(x, y) == TileState.QUESTION)
                     {
