@@ -293,13 +293,12 @@ public class MinefieldPanel extends JComponent
         @Override
         public void mouseExited(MouseEvent e)
         {
-            // Ignore if finished
-            if (minefield.isFinished())
-                return;
-
             // Clear selected tile
-            selectedTile = null;
-            repaint();
+            if (selectedTile != null)
+            {
+                selectedTile = null;
+                repaint();
+            }
         }
 
         @Override
@@ -349,20 +348,29 @@ public class MinefieldPanel extends JComponent
             if (minefield.isFinished())
                 return;
 
-            // If the tile is the same as before, uncover it
-            if (selectedTile != null && selectedTile.equals(getTileFromEvent(e)))
+            // Ensure there was a tile selected
+            if (selectedTile != null)
             {
-                GameState state = minefield.getGameState();
-                minefield.uncover(selectedTile.x, selectedTile.y);
+                // Ensure the tile was the same as the one clicked on
+                if (selectedTile.equals(getTileFromEvent(e)))
+                {
+                    // Either chord or uncover depending on the number of clicks
+                    GameState state = minefield.getGameState();
 
-                // Fire state changed event if needed
-                if (minefield.getGameState() != state)
-                    fireStateChangeEvent();
+                    if (e.getClickCount() == 2)
+                        minefield.chord(selectedTile.x, selectedTile.y);
+                    else if (e.getClickCount() == 1)
+                        minefield.uncover(selectedTile.x, selectedTile.y);
+
+                    // Fire state changed event if needed
+                    if (minefield.getGameState() != state)
+                        fireStateChangeEvent();
+                }
+
+                // Clear selected tile
+                selectedTile = null;
+                repaint();
             }
-
-            // Clear selected tile
-            selectedTile = null;
-            repaint();
         }
     }
 

@@ -195,20 +195,18 @@ public class Minefield
         }
 
         // Perform any uncovering
-        uncoverRecursive(x, y);
-
-        // Check for game state updates
-        if (valuesArray[x][y] < 0)
-        {
-            // Hit a mine
-            gameState = GameState.LOST;
-        }
-        else if (tilesLeft <= 0)
-        {
-            // Uncovered all the non-mines!
-            gameState = GameState.WON;
-        }
+        uncoverNoChecks(x, y);
     }
+
+    /** Tile processor for uncoverNoChecks which uncovers a tile immediately */
+    private final SurroundingTilesProcessor PROCESSOR_UNCOVER = new SurroundingTilesProcessor()
+    {
+        @Override
+        public void process(int x, int y)
+        {
+            uncoverNoChecks(x, y);
+        }
+    };
 
     /**
      * Uncovers the given tile and surrounding tiles without performing state checks
@@ -216,7 +214,7 @@ public class Minefield
      * @param x x position of tile
      * @param y y position of tile
      */
-    private void uncoverRecursive(int x, int y)
+    private void uncoverNoChecks(int x, int y)
     {
         int width = getWidth();
         int height = getHeight();
@@ -228,30 +226,82 @@ public class Minefield
         if (stateArray[x][y] == TileState.UNCOVERED)
             return;
 
-        // Uncover this tile and surrounding tiles if it was a zero
+        // Uncover this tile
         stateArray[x][y] = TileState.UNCOVERED;
         tilesLeft--;
 
+        // Check for special tiles (0 and mines)
         if (valuesArray[x][y] == 0)
         {
-            if (y > 0)
-            {
-                if (x > 0)          uncoverRecursive(x - 1, y - 1);
-                                    uncoverRecursive(x    , y - 1);
-                if (x < width - 1)  uncoverRecursive(x + 1, y - 1);
-            }
-
-            if (x > 0)              uncoverRecursive(x - 1, y    );
-            if (x < width - 1)      uncoverRecursive(x + 1, y    );
-
-            if (y < height - 1)
-            {
-                if (x > 0)          uncoverRecursive(x - 1, y + 1);
-                                    uncoverRecursive(x    , y + 1);
-                if (x < width - 1)  uncoverRecursive(x + 1, y + 1);
-            }
+            // Uncover all surrounding tiles
+            processSurrounding(x, y, PROCESSOR_UNCOVER);
+        }
+        else if (valuesArray[x][y] < 0)
+        {
+            // Hit a mine
+            gameState = GameState.LOST;
+        }
+        else if (tilesLeft <= 0 && gameState == GameState.RUNNING)
+        {
+            // Uncovered all the non-mines!
+            //  The gameState check is required for chording since you may hit a mine and then win
+            //  later on the same move (which we don't want to overwrite)
+            gameState = GameState.WON;
         }
     }
+
+    /** Tile processor for chord which uncovers a tile if it is not flagged */
+    private final SurroundingTilesProcessor PROCESSOR_CHORD = new SurroundingTilesProcessor()
+    {
+        @Override
+        public void process(int x, int y)
+        {
+            // Uncover non-flagged tiles
+            if (stateArray[x][y] != TileState.FLAGGED)
+                uncoverNoChecks(x, y);
+        }
+    };
+
+    /**
+     * Attempts to chord using the given central position
+     *
+     * Chording causes all the surrounding tiles to be uncovered if the number of
+     * surrounding flags is equal to the value on the central tile.
+     *
+     * This method does nothing if the central tile is still covered of the number of
+     * surrounding flags in incorrect.
+     *
+     * @param x x position of central tile
+     * @param y y position of central tile
+     */
+    public void chord(int x, int y)
+    {
+        if (isFinished())
+            throw new IllegalStateException("the game has finished");
+
+        // Ensure the tile is uncovered
+        if (stateArray[x][y] != TileState.UNCOVERED)
+            return;
+
+        // Check number of surrounding flags
+        if (valuesArray[x][y] == countSurroundingFlags(x, y))
+        {
+            // Uncover all surrounding tiles which are not flagged
+            processSurrounding(x, y, PROCESSOR_CHORD);
+        }
+    }
+
+    /** Tile processor for initValues which increments a tile's value if it is not a mine */
+    private final SurroundingTilesProcessor PROCESSOR_INIT_VALUES = new SurroundingTilesProcessor()
+    {
+        @Override
+        public void process(int x, int y)
+        {
+            // Increment values which are not mines
+            if (valuesArray[x][y] >= 0)
+                valuesArray[x][y]++;
+        }
+    };
 
     /**
      * Initializes the values grid for a new game
@@ -285,35 +335,70 @@ public class Minefield
             valuesArray[x][y] = -1;
 
             // Increment number of mines in all surrounding tiles
-            if (y > 0)
-            {
-                if (x > 0)          incrementNonMine(x - 1, y - 1);
-                                    incrementNonMine(x    , y - 1);
-                if (x < width - 1)  incrementNonMine(x + 1, y - 1);
-            }
-
-            if (x > 0)              incrementNonMine(x - 1, y    );
-            if (x < width - 1)      incrementNonMine(x + 1, y    );
-
-            if (y < height - 1)
-            {
-                if (x > 0)          incrementNonMine(x - 1, y + 1);
-                                    incrementNonMine(x    , y + 1);
-                if (x < width - 1)  incrementNonMine(x + 1, y + 1);
-            }
+            processSurrounding(x, y, PROCESSOR_INIT_VALUES);
         }
     }
 
     /**
-     * Increments the value of a tile if it is not a mine
+     * Counts the number of flags surrounding a position
      *
-     * @param x x position of tile
-     * @param y y position of tile
+     * @param x x position of central tile
+     * @param y y position of central tile
+     * @return number of surrounding flags
      */
-    private void incrementNonMine(int x, int y)
+    private int countSurroundingFlags(int x, int y)
     {
-        if (valuesArray[x][y] >= 0)
-            valuesArray[x][y]++;
+        int count = 0;
+        int width = getWidth();
+        int height = getHeight();
+
+        if (y > 0)
+        {
+            if (x > 0)          if (stateArray[x - 1][y - 1] == TileState.FLAGGED) count++;
+                                if (stateArray[x    ][y - 1] == TileState.FLAGGED) count++;
+            if (x < width - 1)  if (stateArray[x + 1][y - 1] == TileState.FLAGGED) count++;
+        }
+
+        if (x > 0)              if (stateArray[x - 1][y    ] == TileState.FLAGGED) count++;
+        if (x < width - 1)      if (stateArray[x + 1][y    ] == TileState.FLAGGED) count++;
+
+        if (y < height - 1)
+        {
+            if (x > 0)          if (stateArray[x - 1][y + 1] == TileState.FLAGGED) count++;
+                                if (stateArray[x    ][y + 1] == TileState.FLAGGED) count++;
+            if (x < width - 1)  if (stateArray[x + 1][y + 1] == TileState.FLAGGED) count++;
+        }
+
+        return count;
+    }
+
+    /**
+     * Calls a function on all the surrounding tiles which exist
+     *
+     * @param x x position of central tile
+     * @param y y position of central tile
+     */
+    private void processSurrounding(int x, int y, SurroundingTilesProcessor processor)
+    {
+        int width = getWidth();
+        int height = getHeight();
+
+        if (y > 0)
+        {
+            if (x > 0)          processor.process(x - 1, y - 1);
+                                processor.process(x    , y - 1);
+            if (x < width - 1)  processor.process(x + 1, y - 1);
+        }
+
+        if (x > 0)              processor.process(x - 1, y    );
+        if (x < width - 1)      processor.process(x + 1, y    );
+
+        if (y < height - 1)
+        {
+            if (x > 0)          processor.process(x - 1, y + 1);
+                                processor.process(x    , y + 1);
+            if (x < width - 1)  processor.process(x + 1, y + 1);
+        }
     }
 
     /**
@@ -382,5 +467,19 @@ public class Minefield
         builder.append("+\n");
 
         return builder.toString();
+    }
+
+    /**
+     * Interface used for processing surrounding tiles
+     */
+    private interface SurroundingTilesProcessor
+    {
+        /**
+         * Processes the given tile (which is guaranteed to exist)
+         *
+         * @param x x position of tile
+         * @param y y position of tile
+         */
+        public void process(int x, int y);
     }
 }
