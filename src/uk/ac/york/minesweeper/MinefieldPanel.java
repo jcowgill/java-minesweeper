@@ -11,7 +11,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 /**
@@ -372,17 +371,5 @@ public class MinefieldPanel extends JComponent
                 repaint();
             }
         }
-    }
-
-    public static void main(String[] args)
-    {
-        final MinefieldPanel comp = new MinefieldPanel(new Minefield(8, 8, 10));
-
-        JFrame mainWindow = new JFrame("My Own Component");
-        mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        comp.setFocusable(true);
-        mainWindow.getContentPane().add(comp);
-        mainWindow.pack();
-        mainWindow.setVisible(true);
     }
 }
