@@ -20,6 +20,9 @@ public class Minefield
     // Number of extra tiles which need to uncovered to win
     private int tilesLeft;
 
+    // If true, uncovers mines when the game finishes
+    private boolean uncoverMinesAtEnd = true;
+
     // State of the game
     private GameState gameState = GameState.NOT_STARTED;
 
@@ -85,6 +88,26 @@ public class Minefield
     public int getMines()
     {
         return mines;
+    }
+
+    /**
+     * Gets a value which is true if all mines are uncovered at the end of the game
+     *
+     * @return true if mines are uncovered at the end
+     */
+    public boolean isUncoveringMinesAtEnd()
+    {
+        return uncoverMinesAtEnd;
+    }
+
+    /**
+     * Sets a value determining whether mines are uncovered at the end of the game
+     *
+     * @param uncoverMinesAtEnd true if mines are uncovered at the end
+     */
+    public void setUncoverMinesAtEnd(boolean uncoverMinesAtEnd)
+    {
+        this.uncoverMinesAtEnd = uncoverMinesAtEnd;
     }
 
     /**
@@ -240,6 +263,7 @@ public class Minefield
         {
             // Hit a mine
             gameState = GameState.LOST;
+            uncoverAllMines();
         }
         else if (tilesLeft <= 0 && gameState == GameState.RUNNING)
         {
@@ -247,6 +271,42 @@ public class Minefield
             //  The gameState check is required for chording since you may hit a mine and then win
             //  later on the same move (which we don't want to overwrite)
             gameState = GameState.WON;
+            uncoverAllMines();
+        }
+    }
+
+    /**
+     * Uncovers all mines if uncoverMinesAtEnd is set
+     *
+     * This does not uncover correctly flagged mines, but sets incorrectly
+     * flagged mines to questions.
+     */
+    private void uncoverAllMines()
+    {
+        if (uncoverMinesAtEnd)
+        {
+            int width = getWidth();
+            int height = getHeight();
+
+            // Set state of all mines to uncovered
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (valuesArray[x][y] < 0)
+                    {
+                        // Uncover if not flagged
+                        if (stateArray[x][y] != TileState.FLAGGED)
+                            stateArray[x][y] = TileState.UNCOVERED;
+                    }
+                    else
+                    {
+                        // Set flags to questions
+                        if (stateArray[x][y] == TileState.FLAGGED)
+                            stateArray[x][y] = TileState.QUESTION;
+                    }
+                }
+            }
         }
     }
 
