@@ -8,7 +8,7 @@ public interface MinefieldStateChangeListener
     /**
      * Called when the game state of the minefield changes
      *
-     * @param event the event object from the minefield
+     * @param event the event object from the minefield panel
      */
     public void stateChanged(MinefieldStateChangeEvent event);
 }
