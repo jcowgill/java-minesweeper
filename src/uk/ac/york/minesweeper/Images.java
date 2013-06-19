@@ -20,6 +20,15 @@ public final class Images
     /** Image of a generic flag */
     public static final BufferedImage FLAG = loadImageResource("flag.png");
 
+    /** Image of a normal face */
+    public static final BufferedImage FACE_NORMAL = loadImageResource("default.png");
+
+    /** Image of a face when you win */
+    public static final BufferedImage FACE_WON = loadImageResource("won.png");
+
+    /** Image of a face when you lose */
+    public static final BufferedImage FACE_LOST = loadImageResource("lost.png");
+
     /**
      * Loads an image from the resources directory
      *
