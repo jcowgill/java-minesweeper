@@ -8,98 +8,156 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 public class MinesweeperFrame extends JFrame implements ActionListener
 {
-	// Variables
-	private static final String INCREMENT = "incr";
-	private static final String RESET = "reset";
-	private static final String START = "start";
-	private static final String STOP = "stop";
+    private static final long serialVersionUID = 1L;
 
-	private JLabel topTimer;
-	private int time = 0;
+    // Constants
+    private static final String[] DIFFICULTIES = { "Easy", "Medium", "Hard" };
 
-	// Timer
-	private Timer scoreTimer = new Timer(1000, this);
+    private static final String INCREMENT = "incr";
+    private static final String RESET = "reset";
 
-	public MinesweeperFrame()
-	{
-		// Basic Interface Settings
-		this.setLayout(new BorderLayout(0,0));
-		this.getContentPane().setBackground(Color.white);
-		this.setSize(new Dimension(350,450));
-		this.setMinimumSize(new Dimension(350,450));
-		this.setTitle("Minesweeper");
+    // Interface
+    private JPanel mainPanel =  new JPanel(new BorderLayout(10, 10));
+    private JComboBox<String> difficultyBox = new JComboBox<String>(DIFFICULTIES);
+    private MinefieldPanel minePanel;
 
-		// Interface Structure
-		JPanel mainPanel =  new JPanel(new BorderLayout(10, 10));
-		mainPanel.setBackground(Color.white);
+    // Timer
+    private Timer scoreTimer = new Timer(1000, this);
+    private JLabel topTimer;
+    private int time = 0;
 
-		JPanel topPanel = new JPanel(new GridLayout(1, 3, 10, 10));
-		topPanel.setBackground(Color.white);
+    // Button Images
+    private JButton topResetBtn;
 
-		JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
-		centerPanel.setBackground(Color.white);
+    public MinesweeperFrame()
+    {
+        // Basic Interface Settings
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        this.setLayout(new BorderLayout(0,0));
+        this.getContentPane().setBackground(Color.white);
+        this.setSize(new Dimension(400, 500));
+        this.setMinimumSize(new Dimension(400, 500));
+        this.setTitle("Minesweeper");
 
-		JPanel centerMidPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        // Interface Structure
+        JPanel topPanel = new JPanel(new GridLayout(1, 3, 10, 10));
+        topPanel.setBackground(Color.white);
 
-		MinefieldPanel minePanel = new MinefieldPanel(new Minefield(10, 10, 10));
-		centerMidPanel.add(minePanel);
+        JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        centerPanel.setBackground(Color.white);
 
-		// Reset Button
-		JButton topResetBtn = new JButton(":)");
-		topResetBtn.setPreferredSize(new Dimension(50, 50));
-		topResetBtn.setActionCommand(RESET);
-		topResetBtn.addActionListener(this);
-		centerPanel.add(topResetBtn);
+        JPanel centerMidPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
 
-		// Labels
-		topTimer = new JLabel(String.valueOf(time) + " Seconds");
+        minePanel = new MinefieldPanel(new Minefield(16, 16, 40));
+        minePanel.addStateChangeListener(new MinefieldStateChangeListener()
+        {
+            @Override
+            public void stateChanged(MinefieldStateChangeEvent event)
+            {
+                Minefield minefield = minePanel.getMinefield();
 
-		// Adding Items to Grid
-		topPanel.add(new JLabel());
-		topPanel.add(centerPanel);
-		topPanel.add(topTimer);
-		mainPanel.add(topPanel, BorderLayout.NORTH);
-		mainPanel.add(centerMidPanel, BorderLayout.CENTER);
+                if (minefield.isFinished())
+                {
+                    // Stop timer and set icon
+                    scoreTimer.stop();
 
-		this.getContentPane().add(mainPanel, BorderLayout.NORTH);
-	}
+                    if (minefield.getGameState() == GameState.WON)
+                        topResetBtn.setIcon(new ImageIcon(Images.FACE_WON));
+                    else
+                        topResetBtn.setIcon(new ImageIcon(Images.FACE_LOST));
+                }
+                else
+                {
+                    // Set normal face and start timer if we've just started
+                    topResetBtn.setIcon(new ImageIcon(Images.FACE_NORMAL));
 
-	@Override
+                    if (minefield.getGameState() == GameState.RUNNING)
+                        scoreTimer.start();
+                }
+
+                topResetBtn.repaint();
+            }
+        });
+
+        centerMidPanel.add(minePanel);
+
+        // Difficulty Chooser
+        difficultyBox.setSelectedIndex(1);
+
+        // Reset Button
+        topResetBtn = new JButton();
+        topResetBtn.setPreferredSize(new Dimension(50, 50));
+        topResetBtn.setActionCommand(RESET);
+        topResetBtn.addActionListener(this);
+        centerPanel.add(topResetBtn);
+
+        topResetBtn.setIcon(new ImageIcon(Images.FACE_NORMAL));
+
+        // Labels
+        topTimer = new JLabel(String.valueOf(time) + " Seconds");
+        scoreTimer.setActionCommand(INCREMENT);
+
+        // Adding Items to Grid
+        topPanel.add(difficultyBox);
+        topPanel.add(centerPanel);
+        topPanel.add(topTimer);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
+        mainPanel.add(centerMidPanel, BorderLayout.CENTER);
+
+        this.getContentPane().add(mainPanel, BorderLayout.NORTH);
+        this.pack();
+    }
+
+    @Override
     public void actionPerformed(ActionEvent event)
-	{
-		if(event.getActionCommand().equals(INCREMENT))
-		{
-			time = time + 1;
-		}
-		else if(event.getActionCommand().equals(RESET))
-		{
-			time = 0;
-		}
-		else if(event.getActionCommand().equals(START))
-		{
-			scoreTimer.start();
-		}
-		else if(event.getActionCommand().equals(STOP))
-		{
-			scoreTimer.stop();
-		}
+    {
+        if(event.getActionCommand().equals(INCREMENT))
+        {
+            time++;
+        }
+        else if(event.getActionCommand().equals(RESET))
+        {
+            time = 0;
 
-		topTimer.setText((time) + " Seconds   ");
-	}
+            if (difficultyBox.getSelectedIndex() == 0)
+            {
+                minePanel.setMinefield((new Minefield(9, 9, 10)));
+            }
+            else if (difficultyBox.getSelectedIndex() == 2)
+            {
+                minePanel.setMinefield((new Minefield(30, 16, 99)));
+            }
+            else if (difficultyBox.getSelectedIndex() == 1)
+            {
+                minePanel.setMinefield((new Minefield(16, 16, 40)));
+            }
 
-	public static void main(String[] args)
-	{
-		MinesweeperFrame mainWindow = new MinesweeperFrame();
-		// To close the application when clicking the close button of a window.
-		mainWindow.setDefaultCloseOperation(EXIT_ON_CLOSE);
-		mainWindow.setVisible(true);
-	}
+            pack();
+        }
+
+        topTimer.setText((time) + " Seconds   ");
+    }
+
+    public static void main(String[] args)
+    {
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                new MinesweeperFrame().setVisible(true);
+            }
+        });
+    }
 }

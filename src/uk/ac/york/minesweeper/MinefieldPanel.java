@@ -53,7 +53,7 @@ public class MinefieldPanel extends JComponent
         new Color(0x00, 0x7F, 0x00),    // 2 = Green
         new Color(0xFF, 0x00, 0x00),    // 3 = Red
         new Color(0x2F, 0x2F, 0x9F),    // 4 = Dark Blue
-        new Color(0xFF, 0x00, 0x00),    // 5 = Maroon
+        new Color(0x7F, 0x00, 0x00),    // 5 = Maroon
         new Color(0x9F, 0x9F, 0x2F),    // 6 = Turquoise
         new Color(0x00, 0x00, 0x00),    // 7 = Black
         new Color(0x7F, 0x7F, 0x7F),    // 8 = Grey
