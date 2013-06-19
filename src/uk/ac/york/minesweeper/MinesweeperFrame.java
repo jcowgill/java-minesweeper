@@ -65,23 +65,27 @@ public class MinesweeperFrame extends JFrame implements ActionListener
             @Override
             public void stateChanged(MinefieldStateChangeEvent event)
             {
-                if(minePanel.getMinefield().getGameState() == GameState.RUNNING)
+                Minefield minefield = minePanel.getMinefield();
+
+                if (minefield.isFinished())
                 {
-                    topResetBtn.setIcon(new ImageIcon(Images.FACE_NORMAL));
-                    scoreTimer.start();
+                    // Stop timer and set icon
+                    scoreTimer.stop();
+
+                    if (minefield.getGameState() == GameState.WON)
+                        topResetBtn.setIcon(new ImageIcon(Images.FACE_WON));
+                    else
+                        topResetBtn.setIcon(new ImageIcon(Images.FACE_LOST));
                 }
                 else
                 {
-                    if(minePanel.getMinefield().getGameState() == GameState.WON)
-                    {
-                        topResetBtn.setIcon(new ImageIcon(Images.FACE_WON));
-                    }
-                    else if (minePanel.getMinefield().getGameState() == GameState.LOST)
-                    {
-                        topResetBtn.setIcon(new ImageIcon(Images.FACE_LOST));
-                    }
-                    scoreTimer.stop();
+                    // Set normal face and start timer if we've just started
+                    topResetBtn.setIcon(new ImageIcon(Images.FACE_NORMAL));
+
+                    if (minefield.getGameState() == GameState.RUNNING)
+                        scoreTimer.start();
                 }
+
                 topResetBtn.repaint();
             }
         });
