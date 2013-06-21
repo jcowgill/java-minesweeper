@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -184,11 +186,16 @@ public class MinefieldPanel extends JComponent
     }
 
     @Override
-    public void paintComponent(Graphics g)
+    public void paintComponent(Graphics gOld)
     {
+        Graphics2D g = (Graphics2D) gOld;
+
         // Get selected tile position
         int selectedX = (selectedTile == null ? -1 : selectedTile.x);
         int selectedY = (selectedTile == null ? -1 : selectedTile.y);
+
+        // Make the numbers look a little nicer
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Draw background
         if (isOpaque())
