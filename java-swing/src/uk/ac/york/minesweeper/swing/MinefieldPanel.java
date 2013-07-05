@@ -1,4 +1,4 @@
-package uk.ac.york.minesweeper;
+package uk.ac.york.minesweeper.swing;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,6 +14,10 @@ import java.util.ArrayList;
 
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+
+import uk.ac.york.minesweeper.GameState;
+import uk.ac.york.minesweeper.Minefield;
+import uk.ac.york.minesweeper.TileState;
 
 /**
  * A component which can display a minefield graphically and handle various events

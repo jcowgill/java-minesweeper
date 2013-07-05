@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>minesweeper</name>
+	<name>minesweeper-swing</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>shared-src</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/shared-src</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>

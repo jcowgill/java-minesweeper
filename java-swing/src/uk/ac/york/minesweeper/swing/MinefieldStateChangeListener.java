@@ -1,4 +1,4 @@
-package uk.ac.york.minesweeper;
+package uk.ac.york.minesweeper.swing;
 
 /**
  * Event fired when the state of the game changes

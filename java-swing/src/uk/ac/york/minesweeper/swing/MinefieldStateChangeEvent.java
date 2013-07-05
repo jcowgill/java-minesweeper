@@ -1,4 +1,4 @@
-package uk.ac.york.minesweeper;
+package uk.ac.york.minesweeper.swing;
 
 import java.util.EventObject;
 

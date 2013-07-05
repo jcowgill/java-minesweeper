@@ -1,4 +1,4 @@
-package uk.ac.york.minesweeper;
+package uk.ac.york.minesweeper.swing;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -16,6 +16,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+
+import uk.ac.york.minesweeper.GameState;
+import uk.ac.york.minesweeper.Minefield;
 
 public class MinesweeperFrame extends JFrame implements ActionListener
 {
