@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res/uk.ac.york.minesweeper.android" >
+
+    <!-- Game Size -->
+    <ListPreference
+        android:key="pref_difficulty"
+        android:title="@string/pref_difficulty"
+        android:dialogTitle="@string/pref_difficulty"
+        android:entries="@array/pref_difficulty_entries"
+        android:entryValues="@array/pref_difficulty_values"
+        android:defaultValue="0" />
+
+    <uk.ac.york.minesweeper.android.NumberPickerPreference
+        android:layout="?android:attr/preferenceLayoutChild"
+        android:key="pref_width"
+        android:title="@string/pref_width"
+        android:defaultValue="8"
+        android:dialogMessage="@string/pref_width_msg"
+        custom:max="50"
+        custom:min="4" />
+
+    <uk.ac.york.minesweeper.android.NumberPickerPreference
+        android:layout="?android:attr/preferenceLayoutChild"
+        android:key="pref_height"
+        android:title="@string/pref_height"
+        android:defaultValue="8"
+        android:dialogMessage="@string/pref_height_msg"
+        custom:max="50"
+        custom:min="4" />
+
+    <uk.ac.york.minesweeper.android.NumberPickerPreference
+        android:layout="?android:attr/preferenceLayoutChild"
+        android:key="pref_mines"
+        android:title="@string/pref_mines"
+        android:defaultValue="10"
+        android:dialogMessage="@string/pref_mines_msg" />
+
+    <!-- Other Preferences -->
+    <CheckBoxPreference
+        android:key="pref_enable_questions"
+        android:title="@string/pref_enable_questions"
+        android:summary="@string/pref_enable_questions_summary"
+        android:defaultValue="false" />
+
+</PreferenceScreen>

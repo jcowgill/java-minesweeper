@@ -1,8 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <!-- Global Strings -->
     <string name="app_name">Minesweeper</string>
-    <string name="action_settings">Settings</string>
+
+    <!-- Game Activity -->
     <string name="hello_world">Hello world!</string>
+
+    <string name="title_activity_game">@string/app_name</string>
+    <string name="action_settings">@string/title_activity_settings</string>
+
+    <!-- Settings Activity -->
+    <string name="title_activity_settings">Settings</string>
+    <string name="pref_difficulty">Difficulty</string>
+
+    <string-array name="pref_difficulty_entries">
+        <item>Easy (8x8, 10 mines)</item>
+        <item>Medium (16x16, 40 mines)</item>
+        <item>Hard (30x16, 99 mines)</item>
+        <item>Custom</item>
+    </string-array>
+
+    <string-array name="pref_difficulty_values">
+        <item>0</item>  <!-- Easy -->
+        <item>1</item>  <!-- Medium -->
+        <item>2</item>  <!-- Hard -->
+        <item>3</item>  <!-- Custom -->
+    </string-array>
+
+    <string name="pref_width">Board width</string>
+    <string name="pref_height">Board height</string>
+    <string name="pref_mines">Number of mines</string>
+
+    <string name="pref_width_msg">Set the board\'s width in tiles</string>
+    <string name="pref_height_msg">Set the board\'s height in tiles</string>
+    <string name="pref_mines_msg">Set the number of mines on the board</string>
+
+    <string name="pref_enable_questions">Enable question marks</string>
+    <string name="pref_enable_questions_summary">Tiles can be set to question marks</string>
 
 </resources>
