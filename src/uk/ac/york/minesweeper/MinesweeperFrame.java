@@ -128,8 +128,11 @@ public class MinesweeperFrame extends JFrame implements ActionListener
         }
         else if(event.getActionCommand().equals(RESET))
         {
+            // Reset timer
+            scoreTimer.stop();
             time = 0;
 
+            // Reset minefield
             if (difficultyBox.getSelectedIndex() == 0)
             {
                 minePanel.setMinefield((new Minefield(9, 9, 10)));
