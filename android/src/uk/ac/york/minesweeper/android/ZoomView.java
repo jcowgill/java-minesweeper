@@ -201,9 +201,20 @@ public class ZoomView extends ViewGroup
         @Override
         public boolean onScale(ScaleGestureDetector detector)
         {
+            float oldScaleFactor = scaleFactor;
+
             // Update scale factor and limit zoom
             scaleFactor *= detector.getScaleFactor();
             scaleFactor = Math.max(MIN_ZOOM, Math.min(scaleFactor, MAX_ZOOM));
+
+            // Update translate offsets so we zoom into the focus point
+            float thisScaleFactor = scaleFactor / oldScaleFactor;
+
+            float focusPointX = detector.getFocusX() - translateX;
+            float focusPointY = detector.getFocusY() - translateY;
+
+            translateX -= focusPointX * (thisScaleFactor - 1);
+            translateY -= focusPointY * (thisScaleFactor - 1);
 
             // Trigger redraw
             shouldUpdateLayout = true;
