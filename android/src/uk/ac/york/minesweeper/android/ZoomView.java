@@ -2,6 +2,8 @@ package uk.ac.york.minesweeper.android;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener;
@@ -27,13 +29,15 @@ public class ZoomView extends ViewGroup
     private float translateX = 0f;
     private float translateY = 0f;
 
-    // Last recorded X and Y positions of the mouse
-    private float prevX = 0f;
-    private float prevY = 0f;
-
-    // Class which handles scaling events
-    private ScaleGestureDetector detector =
+    // Detector classes
+    private ScaleGestureDetector scaleDetector =
             new ScaleGestureDetector(getContext(), new OnPinchListener());
+
+    private GestureDetector scrollDetector =
+            new GestureDetector(getContext(), new OnScrollListener());
+
+    // True if a detector requested a relayout
+    private boolean shouldUpdateLayout;
 
     /**
      * Creates a new ZoomView using the given context
@@ -132,6 +136,9 @@ public class ZoomView extends ViewGroup
 
             child.layout(intX, intY, intX + childWidth, intY + childHeight);
         }
+
+        // Done layout
+        shouldUpdateLayout = false;
     }
 
     /**
@@ -163,69 +170,14 @@ public class ZoomView extends ViewGroup
     @Override
     public boolean onTouchEvent(MotionEvent event)
     {
-        int pointerCount = event.getPointerCount();
-        int action = event.getActionMasked();
+        // Forward to detectors
+        scrollDetector.onTouchEvent(event);
+        scaleDetector.onTouchEvent(event);
 
-        float sumX = 0f;
-        float sumY = 0f;
-        float x, y;
+        // Trigger relayout
+        if (shouldUpdateLayout)
+            updateLayout();
 
-        // Calculate index to skip for pointer up events
-        int skipIndex = -1;
-
-        if (action == MotionEvent.ACTION_POINTER_UP)
-            skipIndex = event.getActionIndex();
-
-        // Calculate focal point
-        //  If a pointer is being lifted, do not include it in the focal point
-        for (int i = 0; i < pointerCount; i++)
-        {
-            if (i != skipIndex)
-            {
-                sumX += event.getX(i);
-                sumY += event.getY(i);
-            }
-        }
-
-        if (skipIndex < 0)
-        {
-            x = sumX / pointerCount;
-            y = sumY / pointerCount;
-        }
-        else
-        {
-            x = sumX / (pointerCount - 1);
-            y = sumY / (pointerCount - 1);
-        }
-
-        // Handle the dragging events
-        switch (event.getActionMasked())
-        {
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_POINTER_DOWN:
-            case MotionEvent.ACTION_POINTER_UP:
-            case MotionEvent.ACTION_UP:
-                // Reset previous x and y positions
-                //  These recalculate the focal point so that adding / removing
-                //  fingers does not cause the view to jump
-                prevX = x;
-                prevY = y;
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                // Move the current position by the delta amount
-                translateX += x - prevX;
-                translateY += y - prevY;
-                prevX = x;
-                prevY = y;
-
-                // Trigger redraw
-                updateLayout();
-                break;
-        }
-
-        // Handle any zoom events
-        detector.onTouchEvent(event);
         return true;
     }
 
@@ -242,7 +194,25 @@ public class ZoomView extends ViewGroup
             scaleFactor = Math.max(MIN_ZOOM, Math.min(scaleFactor, MAX_ZOOM));
 
             // Trigger redraw
-            updateLayout();
+            shouldUpdateLayout = true;
+            return true;
+        }
+    }
+
+    /**
+     * Private class which handles scrolling
+     */
+    private class OnScrollListener extends SimpleOnGestureListener
+    {
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
+        {
+            // Update translate amount
+            translateX -= distanceX;
+            translateY -= distanceY;
+
+            // Trigger redraw
+            shouldUpdateLayout = true;
             return true;
         }
     }
