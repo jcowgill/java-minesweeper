@@ -101,6 +101,20 @@ public class MinefieldView extends View
     }
 
     /**
+     * Calculates the tile size for the view
+     *
+     * Requires valid minefield
+     *
+     * @return the tile size
+     */
+    private float calcTileSize()
+    {
+        // Find largest possible tile size
+        return Math.min((float) getWidth() / minefield.getWidth(),
+                        (float) getHeight() / minefield.getHeight());
+    }
+
+    /**
      * The class which actually draws the game
      */
     private class AndroidDrawer extends MinefieldDrawer<Canvas, Paint>
@@ -108,11 +122,7 @@ public class MinefieldView extends View
         @Override
         protected float getTileSize()
         {
-            Canvas canvas = getDrawContext();
-
-            // Find largest possible tile size
-            return Math.min((float) canvas.getWidth() / minefield.getWidth(),
-                            (float) canvas.getHeight() / minefield.getHeight());
+            return calcTileSize();
         }
 
         @Override
@@ -165,7 +175,16 @@ public class MinefieldView extends View
         @Override
         protected void drawCharacter(float x, float y, float tileSize, char c, Paint paint)
         {
-            // TODO fix this
+            float size = tileSize * 0.75f;
+
+            // Update font size
+            paint.setTextSize(tileSize * 0.75f);
+
+            // Reposition
+            x += tileSize / 2;
+            y += size;
+
+            // Draw text
             getDrawContext().drawText(new char[] { c }, 0, 1, x, y, paint);
         }
 
