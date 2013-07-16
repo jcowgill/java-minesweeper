@@ -280,7 +280,7 @@ public class MinefieldPanel extends JComponent
         }
 
         @Override
-        protected Color createPaint(int color, boolean forText)
+        protected Color createPaint(int color)
         {
             return new Color(color);
         }
@@ -311,7 +311,7 @@ public class MinefieldPanel extends JComponent
         }
 
         @Override
-        protected void drawCharacter(float x, float y, char c, Color paint)
+        protected void drawCharacter(float x, float y, float tileSize, char c, Color paint)
         {
             Graphics2D g = getDrawContext();
 

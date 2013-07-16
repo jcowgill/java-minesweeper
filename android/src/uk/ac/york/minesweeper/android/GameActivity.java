@@ -1,5 +1,7 @@
 package uk.ac.york.minesweeper.android;
 
+import uk.ac.york.minesweeper.Minefield;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
@@ -17,6 +19,9 @@ public class GameActivity extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        // TODO DEBUG CODE
+        ((MinefieldView) findViewById(R.id.minefield_view)).setMinefield(new Minefield(8, 8, 10));
     }
 
     @Override

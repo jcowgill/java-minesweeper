@@ -76,16 +76,16 @@ public abstract class MinefieldDrawer<TContext, TPaint>
     {
         if (!doneInit)
         {
-            paintBackground  = createPaint(COLOUR_BACKGROUND, false);
-            paintDark        = createPaint(COLOUR_DARK,       false);
-            paintLight       = createPaint(COLOUR_LIGHT,      false);
-            paintQuestion    = createPaint(COLOUR_QUESTION,   true);
+            paintBackground  = createPaint(COLOUR_BACKGROUND);
+            paintDark        = createPaint(COLOUR_DARK);
+            paintLight       = createPaint(COLOUR_LIGHT);
+            paintQuestion    = createPaint(COLOUR_QUESTION);
 
             @SuppressWarnings("unchecked")
             TPaint[] locNumbers = (TPaint[]) new Object[COLOUR_NUMBERS.length];
 
             for (int i = 0; i < COLOUR_NUMBERS.length; i++)
-                locNumbers[i] = createPaint(COLOUR_NUMBERS[i], true);
+                locNumbers[i] = createPaint(COLOUR_NUMBERS[i]);
 
             paintNumbers = locNumbers;
 
@@ -106,8 +106,18 @@ public abstract class MinefieldDrawer<TContext, TPaint>
         // Save context
         this.context = drawContext;
 
-        // Get drawer parameters
+        // Clear the screen
+        resetDrawArea(paintBackground);
+
+        // Get minefield and (possibly) exit early
         Minefield minefield = getMinefield();
+        if (minefield == null)
+        {
+            this.context = null;
+            return;
+        }
+
+        // Get and calculate other parameters
         int selectedX = getSelectedX();
         int selectedY = getSelectedY();
 
@@ -116,9 +126,6 @@ public abstract class MinefieldDrawer<TContext, TPaint>
         float lineWidth = tileSize / LINE_WIDTH_DIVISOR;
         float imageSize = tileSize * IMAGE_SIZE_MULTIPLIER;
         float imageOffset = tileSize * ((1 - IMAGE_SIZE_MULTIPLIER) / 2f);
-
-        // Clear the screen
-        resetDrawArea(paintBackground);
 
         // Draw all the tiles
         for (int x = 0; x < minefield.getWidth(); x++)
@@ -144,7 +151,7 @@ public abstract class MinefieldDrawer<TContext, TPaint>
                     }
                     else if (tileValue > 0)
                     {
-                        drawCharacter(graphicsX1, graphicsY1,
+                        drawCharacter(graphicsX1, graphicsY1, tileSize,
                                 (char) ('0' + tileValue), paintNumbers[tileValue]);
                     }
                 }
@@ -169,7 +176,7 @@ public abstract class MinefieldDrawer<TContext, TPaint>
                     }
                     else if (minefield.getTileState(x, y) == TileState.QUESTION)
                     {
-                        drawCharacter(graphicsX1, graphicsY1, '?', paintQuestion);
+                        drawCharacter(graphicsX1, graphicsY1, tileSize, '?', paintQuestion);
                     }
                 }
             }
@@ -213,7 +220,7 @@ public abstract class MinefieldDrawer<TContext, TPaint>
      * @param color colour to create object for
      * @param forText true if the colour will only be used for text, false for rectangles
      */
-    protected abstract TPaint createPaint(int color, boolean forText);
+    protected abstract TPaint createPaint(int color);
 
     /**
      * Clears the draw area to the given colour and prepares for drawing
@@ -238,10 +245,11 @@ public abstract class MinefieldDrawer<TContext, TPaint>
      *
      * @param x x position of the top-left of the tile
      * @param y y position of the top-left of the tile
+     * @param tileSize size of tiles (as returned by {@code getTileSize()})
      * @param c character to draw
      * @param paint paint to draw with
      */
-    protected abstract void drawCharacter(float x, float y, char c, TPaint paint);
+    protected abstract void drawCharacter(float x, float y, float tileSize, char c, TPaint paint);
 
     /**
      * Draws a mine at the given location
