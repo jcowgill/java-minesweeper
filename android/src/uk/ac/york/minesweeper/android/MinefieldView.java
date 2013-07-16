@@ -8,6 +8,9 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.MotionEvent;
 import android.view.View;
 
 /**
@@ -23,6 +26,10 @@ public class MinefieldView extends View
 
     /** The drawing class */
     private AndroidDrawer drawer = new AndroidDrawer();
+
+    /** Detector class */
+    private GestureDetector tapDetector =
+            new GestureDetector(getContext(), new OnTapListener());
 
     /**
      * Creates a new MinefieldView
@@ -78,6 +85,13 @@ public class MinefieldView extends View
     protected void onDraw(Canvas canvas)
     {
         drawer.draw(canvas);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        tapDetector.onTouchEvent(event);
+        return true;
     }
 
     @Override
@@ -167,6 +181,33 @@ public class MinefieldView extends View
         {
             // TODO draw proper image
             drawCharacter(x, y, getTileSize(), 'F', createPaint(0));
+        }
+    }
+
+    /**
+     * Private class which handles tapping
+     */
+    private class OnTapListener extends SimpleOnGestureListener
+    {
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent event)
+        {
+            // Only handle for valid minefields
+            if (minefield != null && !minefield.isFinished())
+            {
+                // Calculate tile to uncover
+                float tileSize = calcTileSize();
+                int x = (int) (event.getX() / tileSize);
+                int y = (int) (event.getY() / tileSize);
+
+                // Uncover tile
+                minefield.uncover(x, y);
+
+                // Redraw
+                invalidate();
+            }
+
+            return true;
         }
     }
 }

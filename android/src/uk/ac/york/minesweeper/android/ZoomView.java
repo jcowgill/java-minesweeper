@@ -168,16 +168,28 @@ public class ZoomView extends ViewGroup
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event)
+    public boolean dispatchTouchEvent(MotionEvent event)
     {
-        // Forward to detectors
+        // Small hack to see all touch events as well as passing onto children
+
+        // Handle touch event ourselves
         scrollDetector.onTouchEvent(event);
         scaleDetector.onTouchEvent(event);
+
+        // Forward to children
+        boolean result = super.dispatchTouchEvent(event);
 
         // Trigger relayout
         if (shouldUpdateLayout)
             updateLayout();
 
+        return result;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        // Handle all touch events which come our way
         return true;
     }
 
