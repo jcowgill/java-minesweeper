@@ -1,5 +1,8 @@
 package uk.ac.york.minesweeper;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -58,6 +61,82 @@ public class Minefield
 
         this.stateArray = stateArray;
         this.valuesArray = new byte[width][height];
+    }
+
+    /**
+     * Creates a new minefield from a data stream saved by the save method
+     *
+     * @param in input data stream
+     */
+    public Minefield(DataInput in) throws IOException
+    {
+        // Read basic information
+        int width = in.readInt();
+        int height = in.readInt();
+
+        mines = in.readInt();
+        tilesLeft = in.readInt();
+        uncoverMinesAtEnd = in.readBoolean();
+
+        // Read game state
+        gameState = GameState.fromNumber(in.readByte());
+
+        // Initialize arrays
+        byte[][] myValuesArray = new byte[width][height];
+        TileState[][] myStateArray = new TileState[width][height];
+
+        valuesArray = myValuesArray;
+        stateArray = myStateArray;
+
+        // Load arrays
+        if (gameState != GameState.NOT_STARTED)
+        {
+            // Read arrays from file
+            for (int x = 0; x < myValuesArray.length; x++)
+                in.readFully(myValuesArray[x]);
+
+            for (int x = 0; x < myStateArray.length; x++)
+                for (int y = 0; y < myStateArray[x].length; y++)
+                    myStateArray[x][y] = TileState.fromNumber(in.readByte());
+        }
+        else
+        {
+            // Clear array
+            for (int x = 0; x < width; x++)
+                Arrays.fill(stateArray[x], TileState.COVERED);
+        }
+    }
+
+    /**
+     * Writes the game data to the given output stream
+     *
+     * @param out output stream
+     */
+    public void save(DataOutput out) throws IOException
+    {
+        // Write basic information
+        out.writeInt(getWidth());
+        out.writeInt(getHeight());
+        out.writeInt(mines);
+        out.writeInt(tilesLeft);
+        out.writeBoolean(uncoverMinesAtEnd);
+
+        // Write game state
+        out.writeByte(gameState.NUMBER);
+
+        // Write arrays
+        if (gameState != GameState.NOT_STARTED)
+        {
+            byte[][] myValuesArray = valuesArray;
+            TileState[][] myStateArray = stateArray;
+
+            for (int x = 0; x < myValuesArray.length; x++)
+                out.write(myValuesArray[x]);
+
+            for (int x = 0; x < myStateArray.length; x++)
+                for (int y = 0; y < myStateArray[x].length; y++)
+                    out.writeByte(myStateArray[x][y].NUMBER);
+        }
     }
 
     /**

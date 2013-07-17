@@ -1,6 +1,8 @@
 package uk.ac.york.minesweeper.android;
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -58,6 +60,19 @@ public class ZoomView extends ViewGroup
     public ZoomView(Context context, AttributeSet attrs)
     {
         super(context, attrs);
+    }
+
+    /**
+     * Restores data in a SavedInfo instance
+     *
+     * @param info info to restore
+     */
+    public void restoreSavedInfo(SavedInfo info)
+    {
+        scaleFactor = info.scaleFactor;
+        translateX = info.translateX;
+        translateY = info.translateY;
+        updateLayout();
     }
 
     @Override
@@ -238,5 +253,69 @@ public class ZoomView extends ViewGroup
             shouldUpdateLayout = true;
             return true;
         }
+    }
+
+    /**
+     * Saved information about the state of the zoom view
+     *
+     * Information about the child is NOT saved
+     */
+    public static class SavedInfo implements Parcelable
+    {
+        final float scaleFactor, translateX, translateY;
+
+        /**
+         * Reads an instance of SavedInfo from a parcel
+         *
+         * @param parcel parcel to read info from
+         */
+        public SavedInfo(Parcel parcel)
+        {
+            scaleFactor = parcel.readFloat();
+            translateX = parcel.readFloat();
+            translateY = parcel.readFloat();
+        }
+
+        /**
+         * Creates an instance of SavedInfo from the information in ZoomView
+         *
+         * @param zoomView view to read info from
+         */
+        public SavedInfo(ZoomView zoomView)
+        {
+            scaleFactor = zoomView.scaleFactor;
+            translateX = zoomView.translateX;
+            translateY = zoomView.translateY;
+        }
+
+        @Override
+        public int describeContents()
+        {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel out, int flags)
+        {
+            out.writeFloat(scaleFactor);
+            out.writeFloat(translateX);
+            out.writeFloat(translateY);
+        }
+
+        public static final Parcelable.Creator<SavedInfo> CREATOR =
+            new Creator<ZoomView.SavedInfo>()
+            {
+                @Override
+                public SavedInfo[] newArray(int size)
+                {
+                    return new SavedInfo[size];
+                }
+
+                @Override
+                public SavedInfo createFromParcel(Parcel source)
+                {
+                    return new SavedInfo(source);
+                }
+            };
     }
 }
