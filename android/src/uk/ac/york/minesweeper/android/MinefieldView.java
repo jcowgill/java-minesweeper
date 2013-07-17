@@ -131,7 +131,8 @@ public class MinefieldView extends View
         if (minefield == null)
             return super.getSuggestedMinimumWidth();
         else
-            return DEFAULT_TILE_SIZE * minefield.getWidth();
+            return DEFAULT_TILE_SIZE * minefield.getWidth() +
+                    getPaddingLeft() + getPaddingRight();
     }
 
     @Override
@@ -141,7 +142,8 @@ public class MinefieldView extends View
         if (minefield == null)
             return super.getSuggestedMinimumWidth();
         else
-            return DEFAULT_TILE_SIZE * minefield.getHeight();
+            return DEFAULT_TILE_SIZE * minefield.getHeight() +
+                    getPaddingTop() + getPaddingBottom();
     }
 
     @Override
@@ -172,9 +174,13 @@ public class MinefieldView extends View
      */
     private float calcTileSize()
     {
+        // Calculate width - padding
+        float width = getWidth() - getPaddingLeft() - getPaddingRight();
+        float height = getHeight() - getPaddingTop() - getPaddingBottom();
+
         // Find largest possible tile size
-        return Math.min((float) getWidth() / minefield.getWidth(),
-                        (float) getHeight() / minefield.getHeight());
+        return Math.min(width / minefield.getWidth(),
+                        height / minefield.getHeight());
     }
 
     /**
@@ -189,15 +195,15 @@ public class MinefieldView extends View
         }
 
         @Override
-        protected int getSelectedX()
+        protected float getPaddingTop()
         {
-            return -1;
+            return MinefieldView.this.getPaddingTop();
         }
 
         @Override
-        protected int getSelectedY()
+        protected float getPaddingLeft()
         {
-            return -1;
+            return MinefieldView.this.getPaddingLeft();
         }
 
         @Override
@@ -225,8 +231,14 @@ public class MinefieldView extends View
         {
             Canvas canvas = getDrawContext();
 
-            // Clear background
-            canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), background);
+            // Get dimensions (without padding)
+            int leftPadding = MinefieldView.this.getPaddingLeft();
+            int topPadding = MinefieldView.this.getPaddingTop();
+            int right = getWidth() - getPaddingRight();
+            int bottom = getHeight() - getPaddingBottom();
+
+            // Clear background (without padding)
+            canvas.drawRect(leftPadding, topPadding, right, bottom, background);
         }
 
         @Override

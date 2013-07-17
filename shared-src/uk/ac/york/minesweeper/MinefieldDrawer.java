@@ -120,6 +120,8 @@ public abstract class MinefieldDrawer<TContext, TPaint>
         // Get and calculate other parameters
         int selectedX = getSelectedX();
         int selectedY = getSelectedY();
+        float paddingX = getPaddingLeft();
+        float paddingY = getPaddingTop();
 
         float tileSize = getTileSize();
         float bevelWidth = tileSize / BEVEL_WIDTH_DIVISOR;
@@ -132,8 +134,8 @@ public abstract class MinefieldDrawer<TContext, TPaint>
         {
             for (int y = 0; y < minefield.getHeight(); y++)
             {
-                float graphicsX1 = x * tileSize;
-                float graphicsY1 = y * tileSize;
+                float graphicsX1 = x * tileSize + paddingX;
+                float graphicsY1 = y * tileSize + paddingY;
 
                 // Draw standard background
                 fillRect(graphicsX1, graphicsY1, tileSize, lineWidth, paintDark);
@@ -198,14 +200,36 @@ public abstract class MinefieldDrawer<TContext, TPaint>
      *
      * @return selected tile x position
      */
-    protected abstract int getSelectedX();
+    protected int getSelectedX()
+    {
+        return -1;
+    }
 
     /**
      * Returns the selected tile's y position or -1 if no tile is selected
      *
      * @return selected tile y position
      */
-    protected abstract int getSelectedY();
+    protected int getSelectedY()
+    {
+        return -1;
+    }
+
+    /**
+     * Returns the amount of padding above the minefield
+     */
+    protected float getPaddingTop()
+    {
+        return 0f;
+    }
+
+    /**
+     * Returns the amount of padding to the left of the minefield
+     */
+    protected float getPaddingLeft()
+    {
+        return 0f;
+    }
 
     /**
      * Returns the minefield to draw
