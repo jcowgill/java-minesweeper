@@ -208,7 +208,7 @@ public class SettingsActivity extends Activity
         {
             case android.R.id.home:
                 // Go back to game activity
-                GameActivity.navigateUp(this);
+                finish();
                 return true;
         }
 

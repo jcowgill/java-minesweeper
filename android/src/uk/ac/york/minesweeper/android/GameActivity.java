@@ -12,7 +12,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -220,31 +219,6 @@ public class GameActivity extends Activity
             // Log exception and return failure
             Log.e("MinefieldManager", "Error writing minefield", e);
             return false;
-        }
-    }
-
-    /**
-     * Navigate up to the main game activity
-     *
-     * @param oldActivity old activity
-     */
-    static void navigateUp(Activity oldActivity)
-    {
-        // Do this manually - i'm not pulling in the whole support library for this!
-
-        // Create intent
-        Intent intent = new Intent(oldActivity, GameActivity.class);
-
-        // Navigate up to that intent
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN)
-        {
-            oldActivity.navigateUpTo(intent);
-        }
-        else
-        {
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            oldActivity.startActivity(intent);
-            oldActivity.finish();
         }
     }
 }
