@@ -5,7 +5,7 @@
     <string name="app_name">Minesweeper</string>
 
     <!-- Game Activity -->
-    <string name="hello_world">Hello world!</string>
+    <string name="action_new_game">New Game</string>
 
     <string name="title_activity_game">@string/app_name</string>
     <string name="action_settings">@string/title_activity_settings</string>

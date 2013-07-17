@@ -100,6 +100,12 @@ public class GameActivity extends Activity
     {
         switch (item.getItemId())
         {
+            case R.id.action_new_game:
+                // Start new game
+                minefield = null;
+                reloadPreferences();
+                return true;
+
             case R.id.action_settings:
                 // Go to settings activity
                 startActivity(new Intent(this, SettingsActivity.class));
