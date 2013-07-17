@@ -43,4 +43,10 @@
         android:summary="@string/pref_enable_questions_summary"
         android:defaultValue="false" />
 
+    <CheckBoxPreference
+        android:key="pref_tap_flag"
+        android:title="@string/pref_tap_flag"
+        android:summary="@string/pref_tap_flag_summary"
+        android:defaultValue="false" />
+
 </PreferenceScreen>

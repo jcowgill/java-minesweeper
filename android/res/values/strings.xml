@@ -39,4 +39,9 @@
     <string name="pref_enable_questions">Enable question marks</string>
     <string name="pref_enable_questions_summary">Tiles can be set to question marks</string>
 
+    <string name="pref_tap_flag">Single tap for flags</string>
+    <string name="pref_tap_flag_summary">
+        Single taps causes placing a flag (rather than uncovering a tile)
+    </string>
+
 </resources>

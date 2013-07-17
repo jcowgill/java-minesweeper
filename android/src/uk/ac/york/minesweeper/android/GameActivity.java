@@ -31,7 +31,7 @@ public class GameActivity extends Activity
 
     // Cached preferences
     private int width, height, mines;
-    private boolean enableQuestions;
+    private boolean enableQuestions, tapFlag;
 
     // View states
     private ZoomView zoomView;
@@ -137,6 +137,7 @@ public class GameActivity extends Activity
         height = prefs.getInt(SettingsActivity.PREF_HEIGHT, 8);
         mines = prefs.getInt(SettingsActivity.PREF_MINES, 10);
         enableQuestions = prefs.getBoolean(SettingsActivity.PREF_ENABLE_QUESTIONS, false);
+        tapFlag = prefs.getBoolean(SettingsActivity.PREF_TAP_FLAG, false);
 
         // Load a new minefield if there is none or if the settings were changed
         if (minefield == null ||
@@ -149,8 +150,9 @@ public class GameActivity extends Activity
             minefieldView.setMinefield(minefield);
         }
 
-        // Set question enabling
+        // Set extra options
         minefieldView.setQuestionsEnabled(enableQuestions);
+        minefieldView.setSingleTapFlag(tapFlag);
     }
 
     /**

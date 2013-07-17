@@ -19,6 +19,7 @@ public class SettingsActivity extends Activity
     public static final String PREF_HEIGHT = "pref_height";
     public static final String PREF_MINES = "pref_mines";
     public static final String PREF_ENABLE_QUESTIONS = "pref_enable_questions";
+    public static final String PREF_TAP_FLAG = "pref_tap_flag";
 
     // Difficulty levels
     public static final int DIFFICULTY_EASY = 0;
