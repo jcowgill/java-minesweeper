@@ -8,6 +8,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.os.Vibrator;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -270,6 +271,15 @@ public class MinefieldView extends View
      */
     private class OnTapListener extends SimpleOnGestureListener
     {
+        /** Length of vibration (ms) for long presses */
+        private static final int VIBLEN_LONG_PRESS = 50;
+
+        /** Length of vibration (ms) for end of game */
+        private static final int VIBLEN_GAME_END = 200;
+
+        private Vibrator vibrator =
+                (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
+
         /**
          * Handles a tap event
          */
@@ -310,6 +320,12 @@ public class MinefieldView extends View
                     minefield.uncover(x, y);
                 }
 
+                // Vibrate at end of game and on long presses
+                if (minefield.isFinished())
+                    vibrator.vibrate(VIBLEN_GAME_END);
+                else if (isLongPress && state != minefield.getTileState(x, y))
+                    vibrator.vibrate(VIBLEN_LONG_PRESS);
+
                 // Redraw
                 invalidate();
             }
@@ -322,7 +338,7 @@ public class MinefieldView extends View
         }
 
         @Override
-        public boolean onSingleTapConfirmed(MotionEvent event)
+        public boolean onSingleTapUp(MotionEvent event)
         {
             handleEvent(event, false);
             return true;
