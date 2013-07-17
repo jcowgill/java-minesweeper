@@ -54,14 +54,13 @@ public class GameActivity extends Activity
         if (savedInstanceState != null)
         {
             // From bundle
-            minefield = savedInstanceState.getParcelable(MINEFIELD_KEY);
-            minefieldView.setMinefield(minefield);
+            setMinefield((ParcelableMinefield) savedInstanceState.getParcelable(MINEFIELD_KEY));
             zoomView.restoreSavedInfo((SavedInfo) savedInstanceState.getParcelable(ZOOM_STATE_KEY));
         }
         else
         {
             // Try from disk
-            minefieldView.setMinefield(loadMinefieldFromDisk());
+            setMinefield(loadMinefieldFromDisk());
         }
 
         // Reload prefs
@@ -101,7 +100,7 @@ public class GameActivity extends Activity
         {
             case R.id.action_new_game:
                 // Start new game
-                minefield = null;
+                setMinefield(null);
                 reloadPreferences();
                 return true;
 
@@ -145,13 +144,21 @@ public class GameActivity extends Activity
                 minefield.getMines() != mines)
         {
             // Change stored minefield
-            minefield = new ParcelableMinefield(width, height, mines);
-            minefieldView.setMinefield(minefield);
+            setMinefield(new ParcelableMinefield(width, height, mines));
         }
 
         // Set extra options
         minefieldView.setQuestionsEnabled(enableQuestions);
         minefieldView.setSingleTapFlag(tapFlag);
+    }
+
+    /**
+     * Sets the minefield
+     */
+    private void setMinefield(ParcelableMinefield minefield)
+    {
+        this.minefield = minefield;
+        this.minefieldView.setMinefield(minefield);
     }
 
     /**
