@@ -302,8 +302,12 @@ public class MinefieldView extends View
             {
                 // Calculate tile to process
                 float tileSize = calcTileSize();
-                int x = (int) (event.getX() / tileSize);
-                int y = (int) (event.getY() / tileSize);
+                int x = (int) ((event.getX() - getPaddingLeft()) / tileSize);
+                int y = (int) ((event.getY() - getPaddingTop()) / tileSize);
+
+                // Ignore out of range tiles
+                if (x >= minefield.getWidth() || y >= minefield.getHeight())
+                    return;
 
                 // Uncover, flag or chord
                 TileState state = minefield.getTileState(x, y);
