@@ -21,8 +21,8 @@ import android.view.ViewGroup;
 public class ZoomView extends ViewGroup
 {
     // Minimum and maximum zoom constants
-    private final static float MIN_ZOOM = 1f;
-    private final static float MAX_ZOOM = 5f;
+    private final static float MIN_ZOOM = 0.5f;
+    private final static float MAX_ZOOM = 2f;
 
     // Current zoom state
     private float scaleFactor = 1f;

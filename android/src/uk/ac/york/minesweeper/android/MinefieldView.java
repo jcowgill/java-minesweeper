@@ -1,5 +1,6 @@
 package uk.ac.york.minesweeper.android;
 
+import uk.ac.york.minesweeper.GameState;
 import uk.ac.york.minesweeper.Minefield;
 import uk.ac.york.minesweeper.MinefieldDrawer;
 import uk.ac.york.minesweeper.TileState;
@@ -14,6 +15,7 @@ import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Toast;
 
 /**
  * A view which displays and handles events for a minefield
@@ -21,7 +23,17 @@ import android.view.View;
 public class MinefieldView extends View
 {
     /** Default tile size (zoom factor of 1) */
-    private static final int DEFAULT_TILE_SIZE = 32;
+    private static final int DEFAULT_TILE_SIZE = 64;
+
+    /** Length of vibration (ms) for long presses */
+    private static final int VIBLEN_LONG_PRESS = 50;
+
+    /** Length of vibration (ms) for end of game */
+    private static final int VIBLEN_GAME_END = 200;
+
+    /** Vibrator service */
+    private Vibrator vibrator =
+            (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
 
     /** The current minefield */
     private Minefield minefield;
@@ -283,15 +295,6 @@ public class MinefieldView extends View
      */
     private class OnTapListener extends SimpleOnGestureListener
     {
-        /** Length of vibration (ms) for long presses */
-        private static final int VIBLEN_LONG_PRESS = 50;
-
-        /** Length of vibration (ms) for end of game */
-        private static final int VIBLEN_GAME_END = 200;
-
-        private Vibrator vibrator =
-                (Vibrator) getContext().getSystemService(Context.VIBRATOR_SERVICE);
-
         /**
          * Handles a tap event
          */
@@ -336,11 +339,26 @@ public class MinefieldView extends View
                     minefield.uncover(x, y);
                 }
 
-                // Vibrate at end of game and on long presses
+                // Handle end of game and long presses
                 if (minefield.isFinished())
+                {
+                    // Vibrate
                     vibrator.vibrate(VIBLEN_GAME_END);
+
+                    // Display result as a toast
+                    int strId;
+
+                    if (minefield.getGameState() == GameState.WON)
+                        strId = R.string.game_won;
+                    else
+                        strId = R.string.game_over;
+
+                    Toast.makeText(getContext(), strId, Toast.LENGTH_LONG).show();
+                }
                 else if (isLongPress && state != minefield.getTileState(x, y))
+                {
                     vibrator.vibrate(VIBLEN_LONG_PRESS);
+                }
 
                 // Redraw
                 invalidate();
