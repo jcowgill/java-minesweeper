@@ -2,7 +2,7 @@
 This is a simple minesweeper game created as part of the EDP workshop at the University of York.
 
 ## Licence
-Copyright 2012 James Cowgill and Alex Stewart
+Copyright 2013 James Cowgill and Alex Stewart
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this work except in compliance with the License. You may obtain a copy of the License in the LICENSE file, or at:
 
